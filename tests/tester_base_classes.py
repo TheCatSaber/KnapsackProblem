@@ -1,0 +1,68 @@
+import os
+import sys
+import unittest
+from typing import Optional
+
+from zero_one_problems import (
+    ZOp,
+    ZOp01,
+    ZOp02,
+    ZOp03,
+    ZOp04,
+    ZOp05,
+    ZOp06,
+    ZOp07,
+    ZOp08,
+    ZOpBaseCase,
+    ZOpSimple,
+    ZOpWP,
+)
+
+# Put parent directory on import path, so can import stuff from there
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from solvers import KnapsackSolver
+
+
+class BaseZeroOneTester(unittest.TestCase):
+    """This is the base case, and will skip all tests."""
+
+    solver: Optional[KnapsackSolver] = None
+
+    def _test_case(self, p_a: ZOp):  # Problem, answer
+        if self.solver is None:
+            self.skipTest("No solver")
+        else:
+            self.assertEqual(self.solver.solve(p_a.p), p_a.a)
+
+    def test_base_case(self):
+        self._test_case(ZOpBaseCase)
+
+    def test_simple(self):
+        self._test_case(ZOpSimple)
+
+    def test_wikipedia(self):
+        self._test_case(ZOpWP)
+
+    def test_p01(self):
+        self._test_case(ZOp01)
+
+    def test_p02(self):
+        self._test_case(ZOp02)
+
+    def test_p03(self):
+        self._test_case(ZOp03)
+
+    def test_p04(self):
+        self._test_case(ZOp04)
+
+    def test_p05(self):
+        self._test_case(ZOp05)
+
+    def test_p06(self):
+        self._test_case(ZOp06)
+
+    def test_p07(self):
+        self._test_case(ZOp07)
+
+    def test_p08(self):
+        self._test_case(ZOp08)
