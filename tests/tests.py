@@ -28,6 +28,9 @@ from solvers import (
     KnapsackSolver,
     ZeroOneDynamicProgrammingSolver,
     ZeroOneDynamicProgrammingSolverSlow,
+    ZeroOneExhaustive,
+    ZeroOneRecursive,
+    ZeroOneRecursiveLRUCache,
 )
 
 # Tests ZOp01-ZOp08 from
@@ -108,7 +111,7 @@ class TestKnapsackSolveBaseClass(unittest.TestCase):
             ValueError, KnapsackSolver.check_strictly_positive, kp.w, kp.W, "Test"
         )
 
-    # Slightly contrived examples to check work
+    # Slightly contrived examples to check works
     def test_dp_solution_index_set_0_first(self):
         kp = KnapsackProblem(1, [2], [2], 0)
         m = [[0], [-1]]
@@ -137,6 +140,9 @@ class TestKnapsackSolveBaseClass(unittest.TestCase):
             ],
         )
 
+    def test_generate_binary(self):
+        self.assertEqual("000", next(KnapsackSolver.generate_binary(3)))
+
 
 class TestZeroOneDPSolver(BaseZeroOneTester):
     solver = ZeroOneDynamicProgrammingSolver()
@@ -152,6 +158,30 @@ class TestZeroOneDPSolverSlow(BaseZeroOneTester):
     # Tests take ~ 150 seconds if p08 is included.
     def test_p08(self):
         self.skipTest("This algorithm is too slow to run this test.")
+
+
+class TestZeroOneExhaustive(BaseZeroOneTester):
+    solver = ZeroOneExhaustive()
+
+    # Tests take ~ 5 minutes if p08 is included.
+    def test_p08(self):
+        self.skipTest("This algorithm is too slow to run this test.")
+
+
+class TestZeroOneRecursive(BaseZeroOneTester):
+    solver = ZeroOneRecursive()
+
+    # Tests take ~ 50 seconds if p08 is included.
+    def test_p08(self):
+        return self.skipTest("This algorithm is too slow to run this test.")
+
+
+class TestZeroOneRecursiveLRUCache(BaseZeroOneTester):
+    solver = ZeroOneRecursiveLRUCache()
+
+    # Tests take ~ 20 seconds if p08 is included.
+    # def test_p08(self):
+        # return self.skipTest("This algorithm is too slow to run this test.")
 
 
 unittest.main()

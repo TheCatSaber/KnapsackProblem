@@ -16,14 +16,14 @@
 
 
 class KnapsackProblem:
-    """Class to store a knapsack problem."""
+    """Class to store a Knapsack Problem."""
 
     @classmethod
     def verify(cls, n: int, w: list[int], v: list[int], W: int) -> None:
         """Verify Knapsack Problem is valid."""
         if n < 0:
             raise ValueError(
-                "The number of items for the kanpsack problem must be greater than or"
+                "The number of items for the knapsack problem must be greater than or"
                 " equal to 0."
             )
         if len(w) != n:
@@ -44,7 +44,7 @@ class KnapsackProblem:
             )
 
     def __init__(self, n: int, w: list[int], v: list[int], W: int) -> None:
-        """Class to store a knapsack problem."""
+        """Class to store a Knapsack Problem."""
         # verify raises errors and no return value, so just call it
         self.verify(n, w, v, W)
         self.n = n

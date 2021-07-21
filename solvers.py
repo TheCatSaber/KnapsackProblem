@@ -16,6 +16,7 @@
 
 
 from abc import ABC, abstractmethod
+from functools import lru_cache
 
 from problems import KnapsackProblem
 
@@ -90,6 +91,13 @@ class KnapsackSolver(ABC):
 
         return knapsack(kp.n, kp.W)
 
+    @classmethod
+    def generate_binary(cls, digits: int):
+        for counter in range(2 ** digits):
+            binary_string = bin(counter).removeprefix("0b")
+            front_padding = "0" * (digits - len(binary_string))
+            yield "".join((front_padding, binary_string))
+
 
 class ZeroOneDynamicProgrammingSolver(KnapsackSolver):
     """Solve 0-1 Knapsack Problem, using Dynamic Programming,
@@ -144,7 +152,7 @@ class ZeroOneDynamicProgrammingSolver(KnapsackSolver):
                 m[i][j] = max(m[i - 1][j], m[i - 1][j - kp.w[i - 1]] + kp.v[i - 1])
             return m[i][j]
 
-        return (recursive(kp.n, kp.W), cls.get_dp_solution_indexes(kp, m))
+        return recursive(kp.n, kp.W), cls.get_dp_solution_indexes(kp, m)
 
 
 class ZeroOneDynamicProgrammingSolverSlow(KnapsackSolver):
@@ -190,4 +198,102 @@ class ZeroOneDynamicProgrammingSolverSlow(KnapsackSolver):
                 else:
                     m[i][j] = max(m[i - 1][j], m[i - 1][j - kp.w[i - 1]] + kp.v[i - 1])
 
-        return (m[kp.n][kp.W], cls.get_dp_solution_indexes(kp, m))
+        return m[kp.n][kp.W], cls.get_dp_solution_indexes(kp, m)
+
+
+class ZeroOneExhaustive(KnapsackSolver):
+    """Solve 0-1 Knapsack Problem by exhaustive search."""
+
+    @classmethod
+    def solve(cls, kp: KnapsackProblem) -> KnapsackSolution:
+        """Solve 0-1 Knapsack Problem by exhaustive search.
+
+        Generates all subsets, finds the value,
+        and checks if this value is greater than the current greatest value
+        """
+
+        max_value: int = 0
+        best_item_list: list[int] = []
+        # Generate subset
+        for binary in cls.generate_binary(kp.n):
+            subset = [index for index in range(kp.n) if binary[index] == "1"]
+            subset_value = sum(
+                value for index, value in enumerate(kp.v) if index in subset
+            )
+            subset_weight = sum(
+                weight for index, weight in enumerate(kp.w) if index in subset
+            )
+            if subset_value > max_value and subset_weight <= kp.W:
+                max_value = subset_value
+                best_item_list = subset
+
+        return max_value, best_item_list
+
+
+class ZeroOneRecursive(KnapsackSolver):
+    """Solve 0-1 Knapsack Problem by recursion, without storing values in array."""
+
+    @classmethod
+    def solve(cls, kp: KnapsackProblem) -> KnapsackSolution:
+        """Solve 0-1 Knapsack Problem by recursion (like DP), without storing values in array."""
+
+        def recursive(i: int, j: int) -> int:
+            """i: number of items to use, j: maximum weight."""
+            if i == 0:
+                return 0
+
+            if kp.w[i - 1] > j:
+                return recursive(i - 1, j)
+            else:
+                return max(
+                    recursive(i - 1, j), recursive(i - 1, j - kp.w[i - 1]) + kp.v[i - 1]
+                )
+
+        def indexes_recursive(i: int, j: int) -> list[int]:
+            if i == 0:
+                return []
+
+            if recursive(i, j) > recursive(i - 1, j):
+                old_list = indexes_recursive(i - 1, j - kp.w[i - 1])
+                old_list.append(i - 1)
+                return old_list
+            else:
+                return indexes_recursive(i - 1, j)
+
+        return recursive(kp.n, kp.W), indexes_recursive(kp.n, kp.W)
+
+
+class ZeroOneRecursiveLRUCache(ZeroOneRecursive):
+    """Solve 0-1 Knapsack Problem by recursion, without storing values in array."""
+
+    @classmethod
+    def solve(cls, kp: KnapsackProblem) -> KnapsackSolution:
+        """Solve 0-1 Knapsack Problem by recursion (like DP), without storing values in array,
+        but using lru_caching."""
+
+        @lru_cache(maxsize=None)
+        def recursive(i: int, j: int) -> int:
+            """i: number of items to use, j: maximum weight."""
+            if i == 0:
+                return 0
+
+            if kp.w[i - 1] > j:
+                return recursive(i - 1, j)
+            else:
+                return max(
+                    recursive(i - 1, j), recursive(i - 1, j - kp.w[i - 1]) + kp.v[i - 1]
+                )
+
+        @lru_cache(maxsize=None)
+        def indexes_recursive(i: int, j: int) -> list[int]:
+            if i == 0:
+                return []
+
+            if recursive(i, j) > recursive(i - 1, j):
+                old_list = indexes_recursive(i - 1, j - kp.w[i - 1])
+                old_list.append(i - 1)
+                return old_list
+            else:
+                return indexes_recursive(i - 1, j)
+
+        return recursive(kp.n, kp.W), indexes_recursive(kp.n, kp.W)
