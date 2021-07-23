@@ -140,9 +140,6 @@ class TestKnapsackSolveBaseClass(unittest.TestCase):
             ],
         )
 
-    def test_generate_binary(self):
-        self.assertEqual("000", next(KnapsackSolver.generate_binary(3)))
-
 
 class TestZeroOneDPSolver(BaseZeroOneTester):
     solver = ZeroOneDynamicProgrammingSolver()
@@ -171,7 +168,7 @@ class TestZeroOneExhaustive(BaseZeroOneTester):
 class TestZeroOneRecursive(BaseZeroOneTester):
     solver = ZeroOneRecursive()
 
-    # Tests take ~ 50 seconds if p08 is included.
+    # Tests take ~ 70 seconds if p08 is included.
     def test_p08(self):
         return self.skipTest("This algorithm is too slow to run this test.")
 
@@ -179,9 +176,9 @@ class TestZeroOneRecursive(BaseZeroOneTester):
 class TestZeroOneRecursiveLRUCache(BaseZeroOneTester):
     solver = ZeroOneRecursiveLRUCache()
 
-    # Tests take ~ 20 seconds if p08 is included.
-    # def test_p08(self):
-        # return self.skipTest("This algorithm is too slow to run this test.")
+    # Tests take ~ 50 seconds if p08 is included.
+    def test_p08(self):
+        return self.skipTest("This algorithm is too slow to run this test.")
 
 
 unittest.main()
