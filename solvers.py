@@ -43,6 +43,15 @@ class KnapsackSolver(ABC):
         if W <= 0:
             raise ValueError(f"{error_name} requires max weights to be greater than 0.")
 
+
+class BaseZeroOneDynamicProgramming(KnapsackSolver):
+    """Defines solution methods used by both DP algorithms"""
+
+    @abstractmethod
+    def solve(self, kp: KnapsackProblem) -> KnapsackSolution:
+        """Abstract classmethod to sovle kp,
+        returning maximum value and list of indices of items in optimal knapsack"""
+
     @classmethod
     def _recursive_index_dp(
         cls, i: int, j: int, m: list[list[int]], kp: KnapsackProblem
@@ -94,13 +103,15 @@ class KnapsackSolver(ABC):
         return cls._recursive_index_dp(kp.n, kp.W, m, kp)
 
 
-class ZeroOneDynamicProgrammingSolver(KnapsackSolver):
+class ZeroOneDynamicProgrammingFast(BaseZeroOneDynamicProgramming):
     """Solve 0-1 Knapsack Problem, using Dynamic Programming,
     only calculating values needed (recursively),
     using algorithm of https://en.wikipedia.org/wiki/Knapsack_problem#0-1_knapsack_problem
     """
 
-    def _recursive(self, i: int, j: int, m: list[list[int]], kp: KnapsackProblem) -> int:
+    def _recursive(
+        self, i: int, j: int, m: list[list[int]], kp: KnapsackProblem
+    ) -> int:
         if i == 0 or j <= 0:
             m[i][j] = 0
             return 0
@@ -150,7 +161,7 @@ class ZeroOneDynamicProgrammingSolver(KnapsackSolver):
         return self._recursive(kp.n, kp.W, m, kp), self.get_dp_solution_indexes(kp, m)
 
 
-class ZeroOneDynamicProgrammingSolverSlow(KnapsackSolver):
+class ZeroOneDynamicProgrammingSlow(BaseZeroOneDynamicProgramming):
     """Solve 0-1 Knapsack Problem, using dynamic programming,
     calculating all values needed in array,
     using algorithm of https://en.wikipedia.org/wiki/Knapsack_problem#0-1_knapsack_problem
@@ -260,7 +271,7 @@ class ZeroOneRecursive(KnapsackSolver):
 class ZeroOneRecursiveLRUCache(ZeroOneRecursive):
     """Solve 0-1 Knapsack Problem by recursion, without storing values in array."""
 
-    @lru_cache # type: ignore # Doesn't work as only caches first call.
+    @lru_cache  # type: ignore
     def _recursive(self, i: int, j: int, kp: KnapsackProblem) -> int:
         """i: number of items to use, j: maximum weight."""
         if i == 0:
@@ -274,7 +285,7 @@ class ZeroOneRecursiveLRUCache(ZeroOneRecursive):
                 self._recursive(i - 1, j - kp.w[i - 1], kp) + kp.v[i - 1],
             )
 
-    @lru_cache # type: ignore
+    @lru_cache  # type: ignore
     def _indexes_recursive(self, i: int, j: int, kp: KnapsackProblem) -> list[int]:
         if i == 0:
             return []
