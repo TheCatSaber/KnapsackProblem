@@ -18,10 +18,13 @@
 from abc import ABC, abstractmethod
 from functools import lru_cache
 import itertools
+from typing import Generator
+
 
 from problems import KnapsackProblem
 
 KnapsackSolution = tuple[int, list[int]]
+MITM_subset = dict[str, tuple[int, int]]
 
 
 class KnapsackSolver(ABC):
@@ -42,6 +45,32 @@ class KnapsackSolver(ABC):
             raise ValueError(f"{error_name} requires all weights to be greater than 0.")
         if W <= 0:
             raise ValueError(f"{error_name} requires max weights to be greater than 0.")
+
+    @classmethod
+    def make_subsets(
+        cls, kp: KnapsackProblem, start: int = 0, end: int = -1
+    ) -> Generator[tuple[str, list[int], int, int], None, None]:
+        """Make subsets of kp, or subsets of parition of kp.
+
+        start (int): index of kp.w/kp.v to start at (default 0)
+        end (int): index of kp.w/kp.v to end at +1
+        (so range(start, end) would enumerate indexes of kp.w/kp.v to use), -1 => kp.n (default -1)
+        index_offset
+        """
+        if end == -1:
+            end = kp.n
+        for binary_list in itertools.product(["0", "1"], repeat=(end - start)):
+            binary = "".join(binary_list)
+            subset = [
+                index + start for index in range(end - start) if binary[index] == "1"
+            ]
+            subset_value = sum(
+                value for index, value in enumerate(kp.v) if index in subset
+            )
+            subset_weight = sum(
+                weight for index, weight in enumerate(kp.w) if index in subset
+            )
+            yield binary, subset, subset_value, subset_weight
 
 
 class BaseZeroOneDynamicProgramming(KnapsackSolver):
@@ -219,17 +248,9 @@ class ZeroOneExhaustive(KnapsackSolver):
         max_value: int = 0
         best_item_list: list[int] = []
         # Generate subsets
-        for binary_list in itertools.product(["0", "1"], repeat=kp.n):
-            binary = "".join(binary_list)
-            subset = [index for index in range(kp.n) if binary[index] == "1"]
-            subset_value = sum(
-                value for index, value in enumerate(kp.v) if index in subset
-            )
-            subset_weight = sum(
-                weight for index, weight in enumerate(kp.w) if index in subset
-            )
-            if subset_value > max_value and subset_weight <= kp.W:
-                max_value = subset_value
+        for _, subset, value, weight in self.make_subsets(kp):
+            if value > max_value and weight <= kp.W:
+                max_value = value
                 best_item_list = subset
 
         return max_value, best_item_list
@@ -302,3 +323,91 @@ class ZeroOneRecursiveLRUCache(ZeroOneRecursive):
         but using lru_caching."""
 
         return self._recursive(kp.n, kp.W, kp), self._indexes_recursive(kp.n, kp.W, kp)
+
+
+class ZeroOneMeetInTheMiddle(KnapsackSolver):
+    """Solve 0-1 Knapsack Problem using "meet-in-themiddle" algorithm.
+    See https://en.wikipedia.org/wiki/Knapsack_problem#Meet-in-the-middle"""
+
+    @classmethod
+    def _make_parition_subsets(
+        cls, kp: KnapsackProblem
+    ) -> tuple[MITM_subset, MITM_subset]:
+        midpoint = kp.n // 2
+        subsets_of_a = {
+            binary: (value, weight)
+            for binary, _, value, weight in cls.make_subsets(kp, end=midpoint)
+        }
+        subsets_of_b = {
+            binary: (value, weight)
+            for binary, _, value, weight in cls.make_subsets(kp, start=midpoint)
+        }
+        return subsets_of_a, subsets_of_b
+
+    @classmethod
+    def _compute_best_subset(
+        cls,
+        subsets_of_a: MITM_subset,
+        subsets_of_b: MITM_subset,
+        W: int,
+        ordered_weights: bool = False,
+    ) -> KnapsackSolution:
+        max_value = 0
+        best_binary = ""
+
+        for binary, (subset_value, subset_weight) in subsets_of_a.items():
+            for binary_b, (subset_value_b, subset_weight_b) in subsets_of_b.items():
+                if subset_weight + subset_weight_b <= W:
+                    combined_value = subset_value + subset_value_b
+                    if combined_value > max_value:
+                        max_value = combined_value
+                        best_binary = "".join((binary, binary_b))
+                elif ordered_weights:
+                    # Weights in b gone over what this A subset can handle, so next A subset
+                    break
+        return_items = [
+            index for index, value in enumerate(best_binary) if value == "1"
+        ]
+        return max_value, return_items
+
+    def solve(self, kp: KnapsackProblem) -> KnapsackSolution:
+        """Solve 0-1 Knapsack Problem using "meet-in-themiddle" algorithm.
+        See https://en.wikipedia.org/wiki/Knapsack_problem#Meet-in-the-middle"""
+
+        subsets_of_a, subsets_of_b = self._make_parition_subsets(kp)
+        return self._compute_best_subset(subsets_of_a, subsets_of_b, kp.W)
+
+
+class ZeroOneMeetInTheMiddleOptimised(ZeroOneMeetInTheMiddle):
+    @classmethod
+    def _optimise_subsets_of_b(cls, subsets_of_b: MITM_subset) -> MITM_subset:
+        # Sort by weight
+        subsets_of_b = {
+            binary: (value, weight)
+            for binary, (value, weight) in sorted(
+                subsets_of_b.items(), key=lambda item: item[1][1]
+            )
+        }
+        # Discard if this item weighs more than another subset with greater or equal value.
+        # (so discarded weighs more and has a lower or equal value)
+        new_subsets: MITM_subset = {}
+        for binary, (value, weight) in subsets_of_b.items(): # Starts at lowest weight
+            for (accepted_value, accepted_weight) in new_subsets.values():
+                if weight > accepted_weight and value <= accepted_value:
+                    # Discard
+                    break
+            else: # No break (item not discarded)
+                new_subsets[binary] = (value, weight)
+        subsets_of_b = new_subsets
+        return subsets_of_b
+
+    def solve(self, kp: KnapsackProblem) -> KnapsackSolution:
+        """Solve 0-1 Knapsack Problem using "meet-in-themiddle" algorithm,
+        using optimisation steps therein described.
+        See https://en.wikipedia.org/wiki/Knapsack_problem#Meet-in-the-middle"""
+
+        subsets_of_a, subsets_of_b = self._make_parition_subsets(kp)
+        subsets_of_b = self._optimise_subsets_of_b(subsets_of_b)
+        return self._compute_best_subset(
+            subsets_of_a, subsets_of_b, kp.W, ordered_weights=True
+        )

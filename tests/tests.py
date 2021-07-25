@@ -17,6 +17,7 @@
 
 import os
 import sys
+from typing import Generator
 import unittest
 
 from tester_base_classes import BaseZeroOneTester
@@ -30,6 +31,8 @@ from solvers import (
     ZeroOneDynamicProgrammingFast,
     ZeroOneDynamicProgrammingSlow,
     ZeroOneExhaustive,
+    ZeroOneMeetInTheMiddle,
+    ZeroOneMeetInTheMiddleOptimised,
     ZeroOneRecursive,
     ZeroOneRecursiveLRUCache,
 )
@@ -112,6 +115,72 @@ class TestKnapsackSolveBaseClass(unittest.TestCase):
             ValueError, KnapsackSolver.check_strictly_positive, kp.w, kp.W, "Test"
         )
 
+    def test_subsets_whole_range(self):
+        kp = KnapsackProblem(3, [1, 2, 3], [1, 2, 3], 5)
+
+        def make_own_generator() -> Generator[
+            tuple[str, list[int], int, int], None, None
+        ]:
+            yield "000", [], 0, 0
+            yield "001", [2], 3, 3
+            yield "010", [1], 2, 2
+            yield "011", [1, 2], 5, 5
+            yield "100", [0], 1, 1
+            yield "101", [0, 2], 4, 4
+            yield "110", [0, 1], 3, 3
+            yield "111", [0, 1, 2], 6, 6
+
+        self.assertEqual(
+            [i for i in make_own_generator()],
+            [i for i in KnapsackSolver.make_subsets(kp)],
+        )
+
+    def test_subsets_first_two(self):
+        kp = KnapsackProblem(3, [1, 2, 3], [1, 2, 3], 5)
+
+        def make_own_generator() -> Generator[
+            tuple[str, list[int], int, int], None, None
+        ]:
+            yield "00", [], 0, 0
+            yield "01", [1], 2, 2
+            yield "10", [0], 1, 1
+            yield "11", [0, 1], 3, 3
+
+        self.assertEqual(
+            [i for i in make_own_generator()],
+            [i for i in KnapsackSolver.make_subsets(kp, 0, 2)],
+        )
+
+    def test_subsets_last_two(self):
+        kp = KnapsackProblem(3, [1, 2, 3], [1, 2, 3], 5)
+
+        def make_own_generator() -> Generator[
+            tuple[str, list[int], int, int], None, None
+        ]:
+            yield "00", [], 0, 0
+            yield "01", [2], 3, 3
+            yield "10", [1], 2, 2
+            yield "11", [1, 2], 5, 5
+
+        self.assertEqual(
+            [i for i in make_own_generator()],
+            [i for i in KnapsackSolver.make_subsets(kp, 1, 3)],
+        )
+
+    def test_subsets_single_middle(self):
+        kp = KnapsackProblem(3, [1, 2, 3], [1, 2, 3], 5)
+
+        def make_own_generator() -> Generator[
+            tuple[str, list[int], int, int], None, None
+        ]:
+            yield "0", [], 0, 0
+            yield "1", [1], 2, 2
+
+        self.assertEqual(
+            [i for i in make_own_generator()],
+            [i for i in KnapsackSolver.make_subsets(kp, 1, 2)],
+        )
+
 
 class TestBaseZeroOneDP(unittest.TestCase):
     # Slightly contrived examples to check works
@@ -180,6 +249,22 @@ class TestZeroOneRecursiveLRUCache(BaseZeroOneTester):
     solver = ZeroOneRecursiveLRUCache()
 
     # Tests take ~ 50 seconds if p08 is included.
+    def test_p08(self):
+        return self.skipTest("This algorithm is too slow to run this test.")
+
+
+class TestZeroOneMITM(BaseZeroOneTester):
+    solver = ZeroOneMeetInTheMiddle()
+
+    # Tests take ~ 7 seconds if p08 is included.
+    def test_p08(self):
+        return self.skipTest("This algorithm is too slow to run this test.")
+
+
+class TestZeroOneMITMOptimised(BaseZeroOneTester):
+    solver = ZeroOneMeetInTheMiddleOptimised()
+    
+    # Tests take ~ 1.2 seconds if p08 is included.
     def test_p08(self):
         return self.skipTest("This algorithm is too slow to run this test.")
 
