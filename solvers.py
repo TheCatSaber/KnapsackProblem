@@ -72,6 +72,14 @@ class KnapsackSolver(ABC):
             )
             yield binary, subset, subset_value, subset_weight
 
+    @classmethod
+    def binary_to_solution(cls, binary: str) -> list[int]:
+        if not all(char in "01" for char in binary):
+            raise ValueError(
+                "binary must be string of only 0 or qs in binary_to_solution"
+            )
+        return [int(char) for char in binary]
+
 
 class BaseZeroOneDynamicProgramming(KnapsackSolver):
     """Defines solution methods used by both DP algorithms"""
@@ -87,9 +95,13 @@ class BaseZeroOneDynamicProgramming(KnapsackSolver):
     ) -> list[int]:
         """Recursively get solution:
         if an item is introduced and value changes, that item is in the solution."""
+
+        # Make solution set of 0s
+        solution = [0 for _ in range(kp.n)]
         # Base case
         if i == 0:
-            return []
+            return solution
+
         # Check for value being -1 (since certain algs set values to be -1 as default)
         # If the array value is on the edge of the array (i == 0 or j <= 0),
         # it should be 0, so set it to this.
@@ -110,9 +122,9 @@ class BaseZeroOneDynamicProgramming(KnapsackSolver):
             )
         # If item in solution, call recursively, add item to list and return
         if m[i][j] > m[i - 1][j]:
-            old_list = cls._recursive_index_dp(i - 1, j - kp.w[i - 1], m, kp)
-            old_list.append(i - 1)  # i - 1 so index of item
-            return old_list
+            solution = cls._recursive_index_dp(i - 1, j - kp.w[i - 1], m, kp)
+            solution[i - 1] = 1  # i - 1 so index of item
+            return solution
         # Otherwise item is not in, and remove one item
         else:
             return cls._recursive_index_dp(i - 1, j, m, kp)
@@ -246,14 +258,14 @@ class ZeroOneExhaustive(KnapsackSolver):
         """
 
         max_value: int = 0
-        best_item_list: list[int] = []
+        best_binary: str = ""
         # Generate subsets
-        for _, subset, value, weight in self.make_subsets(kp):
+        for binary, _, value, weight in self.make_subsets(kp):
             if value > max_value and weight <= kp.W:
                 max_value = value
-                best_item_list = subset
+                best_binary = binary
 
-        return max_value, best_item_list
+        return max_value, self.binary_to_solution(best_binary)
 
 
 class ZeroOneRecursive(KnapsackSolver):
@@ -273,13 +285,16 @@ class ZeroOneRecursive(KnapsackSolver):
             )
 
     def _indexes_recursive(self, i: int, j: int, kp: KnapsackProblem) -> list[int]:
+
+        solution = [0 for _ in range(kp.n)]
+
         if i == 0:
-            return []
+            return solution
 
         if self._recursive(i, j, kp) > self._recursive(i - 1, j, kp):
-            old_list = self._indexes_recursive(i - 1, j - kp.w[i - 1], kp)
-            old_list.append(i - 1)
-            return old_list
+            solution = self._indexes_recursive(i - 1, j - kp.w[i - 1], kp)
+            solution[i - 1] = 1
+            return solution
         else:
             return self._indexes_recursive(i - 1, j, kp)
 
@@ -308,13 +323,15 @@ class ZeroOneRecursiveLRUCache(ZeroOneRecursive):
 
     @lru_cache  # type: ignore
     def _indexes_recursive(self, i: int, j: int, kp: KnapsackProblem) -> list[int]:
+        solution = [0 for _ in range(kp.n)]
+
         if i == 0:
-            return []
+            return solution
 
         if self._recursive(i, j, kp) > self._recursive(i - 1, j, kp):
-            old_list = self._indexes_recursive(i - 1, j - kp.w[i - 1], kp)
-            old_list.append(i - 1)
-            return old_list
+            solution = self._indexes_recursive(i - 1, j - kp.w[i - 1], kp)
+            solution[i - 1] = 1
+            return solution
         else:
             return self._indexes_recursive(i - 1, j, kp)
 
@@ -365,10 +382,8 @@ class ZeroOneMeetInTheMiddle(KnapsackSolver):
                 elif ordered_weights:
                     # Weights in b gone over what this A subset can handle, so next A subset
                     break
-        return_items = [
-            index for index, value in enumerate(best_binary) if value == "1"
-        ]
-        return max_value, return_items
+        
+        return max_value, cls.binary_to_solution(best_binary)
 
     def solve(self, kp: KnapsackProblem) -> KnapsackSolution:
         """Solve 0-1 Knapsack Problem using "meet-in-themiddle" algorithm.
@@ -391,12 +406,12 @@ class ZeroOneMeetInTheMiddleOptimised(ZeroOneMeetInTheMiddle):
         # Discard if this item weighs more than another subset with greater or equal value.
         # (so discarded weighs more and has a lower or equal value)
         new_subsets: MITM_subset = {}
-        for binary, (value, weight) in subsets_of_b.items(): # Starts at lowest weight
+        for binary, (value, weight) in subsets_of_b.items():  # Starts at lowest weight
             for (accepted_value, accepted_weight) in new_subsets.values():
                 if weight > accepted_weight and value <= accepted_value:
                     # Discard
                     break
-            else: # No break (item not discarded)
+            else:  # No break (item not discarded)
                 new_subsets[binary] = (value, weight)
         subsets_of_b = new_subsets
         return subsets_of_b
