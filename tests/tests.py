@@ -17,8 +17,8 @@
 
 import os
 import sys
-from typing import Generator
 import unittest
+from typing import Generator
 
 from tester_base_classes import BaseZeroOneTester
 
@@ -180,6 +180,15 @@ class TestKnapsackSolveBaseClass(unittest.TestCase):
             [i for i in make_own_generator()],
             [i for i in KnapsackSolver.make_subsets(kp, 1, 2)],
         )
+    
+    def test_binary_to_solution_normal(self):
+        self.assertEqual([1, 0, 0, 1], KnapsackSolver.binary_to_solution("1001"))
+    
+    def test_binary_to_solution_nothing(self):
+        self.assertEqual([], KnapsackSolver.binary_to_solution(""))
+    
+    def test_binary_to_solution_error(self):
+        self.assertRaises(ValueError, KnapsackSolver.binary_to_solution, "a")
 
 
 class TestBaseZeroOneDP(unittest.TestCase):
@@ -263,7 +272,7 @@ class TestZeroOneMITM(BaseZeroOneTester):
 
 class TestZeroOneMITMOptimised(BaseZeroOneTester):
     solver = ZeroOneMeetInTheMiddleOptimised()
-    
+
     # Tests take ~ 1.2 seconds if p08 is included.
     def test_p08(self):
         return self.skipTest("This algorithm is too slow to run this test.")
