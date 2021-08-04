@@ -180,6 +180,15 @@ class TestKnapsackSolveBaseClass(unittest.TestCase):
             [i for i in make_own_generator()],
             [i for i in KnapsackSolver.make_subsets(kp, 1, 2)],
         )
+    
+    def test_binary_to_solution_normal(self):
+        self.assertEqual([1, 0, 0, 1], KnapsackSolver.binary_to_solution("1001"))
+    
+    def test_binary_to_solution_nothing(self):
+        self.assertEqual([], KnapsackSolver.binary_to_solution(""))
+    
+    def test_binary_to_solution_error(self):
+        self.assertRaises(ValueError, KnapsackSolver.binary_to_solution, "a")
 
     def test_binary_to_solution_normal(self):
         self.assertEqual([1, 0, 0, 1], KnapsackSolver.binary_to_solution("1001"))
