@@ -32,6 +32,10 @@ class KnapsackSolver(ABC):
     defined by problem_class.KnapsackProblem objects"""
 
     @abstractmethod
+    def __str__(self) -> str:
+        """__str__ magic method"""
+
+    @abstractmethod
     def solve(self, kp: KnapsackProblem) -> KnapsackSolution:
         """Abstract classmethod to sovle kp,
         returning maximum value and list of indices of items in optimal knapsack"""
@@ -83,6 +87,10 @@ class KnapsackSolver(ABC):
 
 class BaseZeroOneDynamicProgramming(KnapsackSolver):
     """Defines solution methods used by both DP algorithms"""
+
+    @abstractmethod
+    def __str__(self) -> str:
+        """__str__ magic method"""
 
     @abstractmethod
     def solve(self, kp: KnapsackProblem) -> KnapsackSolution:
@@ -150,6 +158,10 @@ class ZeroOneDynamicProgrammingFast(BaseZeroOneDynamicProgramming):
     using algorithm of https://en.wikipedia.org/wiki/Knapsack_problem#0-1_knapsack_problem
     """
 
+    def __str__(self) -> str:
+        """__str__ magic method"""
+        return "0-1 Dynamic Programming (Fast)"
+
     def _recursive(
         self, i: int, j: int, m: list[list[int]], kp: KnapsackProblem
     ) -> int:
@@ -208,6 +220,10 @@ class ZeroOneDynamicProgrammingSlow(BaseZeroOneDynamicProgramming):
     using algorithm of https://en.wikipedia.org/wiki/Knapsack_problem#0-1_knapsack_problem
     """
 
+    def __str__(self) -> str:
+        """__str__ magic method"""
+        return "0-1 Dynamic Programming Slow"
+    
     def solve(self, kp: KnapsackProblem) -> KnapsackSolution:
         """Solve 0-1 Knapsack Problem by Dynamic Programming.
         Calculates all values needed in array.
@@ -250,6 +266,10 @@ class ZeroOneDynamicProgrammingSlow(BaseZeroOneDynamicProgramming):
 class ZeroOneExhaustive(KnapsackSolver):
     """Solve 0-1 Knapsack Problem by exhaustive search."""
 
+    def __str__(self) -> str:
+        """__str__ magic method"""
+        return "0-1 Exhaustive"
+
     def solve(self, kp: KnapsackProblem) -> KnapsackSolution:
         """Solve 0-1 Knapsack Problem by exhaustive search.
 
@@ -270,6 +290,10 @@ class ZeroOneExhaustive(KnapsackSolver):
 
 class ZeroOneRecursive(KnapsackSolver):
     """Solve 0-1 Knapsack Problem by recursion, without storing values in array."""
+
+    def __str__(self) -> str:
+        """__str__ magic method"""
+        return "0-1 Recursive"
 
     def _recursive(self, i: int, j: int, kp: KnapsackProblem) -> int:
         """i: number of items to use, j: maximum weight."""
@@ -306,6 +330,10 @@ class ZeroOneRecursive(KnapsackSolver):
 
 class ZeroOneRecursiveLRUCache(ZeroOneRecursive):
     """Solve 0-1 Knapsack Problem by recursion, without storing values in array."""
+
+    def __str__(self) -> str:
+        """__str__ magic method"""
+        return "0-1 Recursive (LRU Cache)"
 
     @lru_cache  # type: ignore
     def _recursive(self, i: int, j: int, kp: KnapsackProblem) -> int:
@@ -345,6 +373,10 @@ class ZeroOneRecursiveLRUCache(ZeroOneRecursive):
 class ZeroOneMeetInTheMiddle(KnapsackSolver):
     """Solve 0-1 Knapsack Problem using "meet-in-themiddle" algorithm.
     See https://en.wikipedia.org/wiki/Knapsack_problem#Meet-in-the-middle"""
+
+    def __str__(self) -> str:
+        """__str__ magic method"""
+        return "0-1 Meet-in-the-middle"
 
     @classmethod
     def _make_parition_subsets(
@@ -394,6 +426,11 @@ class ZeroOneMeetInTheMiddle(KnapsackSolver):
 
 
 class ZeroOneMeetInTheMiddleOptimised(ZeroOneMeetInTheMiddle):
+
+    def __str__(self) -> str:
+        """__str__ magic method"""
+        return "0-1 Meet-in-the-middle (optimised)"
+
     @classmethod
     def _optimise_subsets_of_b(cls, subsets_of_b: MITM_subset) -> MITM_subset:
         # Sort by weight
