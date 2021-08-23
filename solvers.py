@@ -38,8 +38,11 @@ class KnapsackSolver(ABC):
 
     @abstractmethod
     def solve(self, kp: KnapsackProblem) -> KnapsackSolution:
-        """Abstract classmethod to sovle kp,
-        returning maximum value and list of indices of items in optimal knapsack"""
+        """Abstract method to solve kp (problems.KnapsackProblem).
+
+        Return maximum value and list indicating the items in the optimal knapsack
+        (0: item is not in the solution; 1: item is in the solution).
+        """
 
     # Things used by multiple sub-algorithms.
     @classmethod
@@ -97,8 +100,11 @@ class BaseZeroOneDynamicProgramming(KnapsackSolver):
 
     @abstractmethod
     def solve(self, kp: KnapsackProblem) -> KnapsackSolution:
-        """Abstract classmethod to sovle kp,
-        returning maximum value and list of indices of items in optimal knapsack"""
+        """Abstract method to sovle kp (problems.KnapsackProblem).
+
+        Return maximum value and list indicating the items in the optimal knapsack
+        (0: item is not in the solution; 1: item is in the solution).
+        """
 
     @classmethod
     def _recursive_index_dp(
@@ -187,8 +193,11 @@ class ZeroOneDynamicProgrammingFast(BaseZeroOneDynamicProgramming):
         return m[i][j]
 
     def solve(self, kp: KnapsackProblem) -> KnapsackSolution:
-        """Solve 0-1 Knapsack Problem by Dynamic Programming.
+        """Solve kp (problems.KnapsackProblem) by Dynamic Programming.
         Recursively calculate values needed in m, starting at m[n][W].
+
+        Return maximum value and list indicating the items in the optimal knapsack
+        (0: item is not in the solution; 1: item is in the solution).
 
         m = 2D array, with first index (i) indicating how many indexes in kp.w and kp.v to use
         and the second index (w) indicating the maximum weight for the sub-problem.
@@ -203,7 +212,8 @@ class ZeroOneDynamicProgrammingFast(BaseZeroOneDynamicProgramming):
         • m[i][w] = max(m[i-1][w], m[i-1][w-w[i-1]] + v[i-1]) if wi <= w
             ->  new item is less than current weight limit, so pick greater value of:
                 • Not using new item
-                • Using new item - value of (current weight limit - weight of new item) + value of new item
+                • Using new item - value of (current weight limit - weight of new item)
+                    + value of new item
         """
         # Base case
         if kp.n == 0:
@@ -212,6 +222,7 @@ class ZeroOneDynamicProgrammingFast(BaseZeroOneDynamicProgramming):
         # This algorithm assumes w1, w2, ... wn, W > 0, so test this
         self.check_strictly_positive(kp.w, kp.W, "ZeroOneDynamicProgrammingSolver")
 
+        # Create array with -1 so self._recursive can know whether a value has been set yet.
         m = [[-1 for _ in range(kp.W + 1)] for _ in range(kp.n + 1)]
 
         return self._recursive(kp.n, kp.W, m, kp), self.get_dp_solution_indexes(kp, m)
@@ -228,8 +239,11 @@ class ZeroOneDynamicProgrammingSlow(BaseZeroOneDynamicProgramming):
         return "0-1 Dynamic Programming Slow"
     
     def solve(self, kp: KnapsackProblem) -> KnapsackSolution:
-        """Solve 0-1 Knapsack Problem by Dynamic Programming.
-        Calculates all values needed in array.
+        """Solve kp (problems.KnapsackProblem) by Dynamic Programming.
+        Calculate all values in array.
+
+        Return maximum value and list indicating the items in the optimal knapsack
+        (0: item is not in the solution; 1: item is in the solution).
 
         m = 2D array, with first index (i) indicating how many indexes in kp.w and kp.v to use
         and the second index (w) indicating the maximum weight for the sub-problem.
@@ -244,15 +258,16 @@ class ZeroOneDynamicProgrammingSlow(BaseZeroOneDynamicProgramming):
         • m[i][w] = max(m[i-1][w], m[i-1][w-w[i-1]] + v[i-1]) if wi <= w
             ->  new item is less than current weight limit, so pick greater value of:
                 • Not using new item
-                • Using new item - value of (current weight limit - weight of new item) + value of new item
+                • Using new item - value of (current weight limit - weight of new item)
+                    + value of new item
         """
         if kp.n == 0:
             return 0, []
 
-        # This algorithm assumes w1, w2, ... wn, W > 0, so test this
+        # This algorithm assumes w1, w2, ... wn, W > 0, so test this.
         self.check_strictly_positive(kp.w, kp.W, "ZeroOneDynamicProgrammingSolverSlow")
 
-        # Creating with 0s means do not have to deal with top row and left column manually
+        # Creating with 0s so do not have to set top row and left column manually.
         m = [[0 for _ in range(kp.W + 1)] for _ in range(kp.n + 1)]
 
         for i in range(1, kp.n + 1):
@@ -276,10 +291,13 @@ class ZeroOneExhaustive(KnapsackSolver):
         return "0-1 Exhaustive"
 
     def solve(self, kp: KnapsackProblem) -> KnapsackSolution:
-        """Solve 0-1 Knapsack Problem by exhaustive search.
+        """Solve kp (problems.KnapsackProblem) by exhaustive search.
+
+        Return maximum value and list indicating the items in the optimal knapsack
+        (0: item is not in the solution; 1: item is in the solution).
 
         Generates all subsets, finds the value,
-        and checks if this value is greater than the current greatest value
+        and checks if this value is greater than the current greatest value.
         """
 
         max_value: int = 0
@@ -328,7 +346,11 @@ class ZeroOneRecursive(KnapsackSolver):
             return self._indexes_recursive(i - 1, j, kp)
 
     def solve(self, kp: KnapsackProblem) -> KnapsackSolution:
-        """Solve 0-1 Knapsack Problem by recursion (like DP), without storing values in array."""
+        """Solve kp (problems.KnapsackProblem) by recursion, without using an array.
+
+        Return maximum value and list indicating the items in the optimal knapsack
+        (0: item is not in the solution; 1: item is in the solution).
+        """
 
         return self._recursive(kp.n, kp.W, kp), self._indexes_recursive(kp.n, kp.W, kp)
 
@@ -371,8 +393,12 @@ class ZeroOneRecursiveLRUCache(ZeroOneRecursive):
             return self._indexes_recursive(i - 1, j, kp)
 
     def solve(self, kp: KnapsackProblem) -> KnapsackSolution:
-        """Solve 0-1 Knapsack Problem by recursion (like DP), without storing values in array,
-        but using lru_caching."""
+        """Solve kp (problems.KnapsackProblem) by recursion, without using an array,
+        but using the @functools.lru_cache decorator.
+        
+        Return maximum value and list indicating the items in the optimal knapsack
+        (0: item is not in the solution; 1: item is in the solution).
+        """
 
         return self._recursive(kp.n, kp.W, kp), self._indexes_recursive(kp.n, kp.W, kp)
 
@@ -426,8 +452,13 @@ class ZeroOneMeetInTheMiddle(KnapsackSolver):
         return max_value, cls.binary_to_solution(best_binary)
 
     def solve(self, kp: KnapsackProblem) -> KnapsackSolution:
-        """Solve 0-1 Knapsack Problem using "meet-in-themiddle" algorithm.
-        See https://en.wikipedia.org/wiki/Knapsack_problem#Meet-in-the-middle"""
+        """Solve kp (problems.KnapsackProblem) using "meet-in-themiddle" algorithm.
+
+        Return maximum value and list indicating the items in the optimal knapsack
+        (0: item is not in the solution; 1: item is in the solution).
+
+        See https://en.wikipedia.org/wiki/Knapsack_problem#Meet-in-the-middle.
+        """
 
         subsets_of_a, subsets_of_b = self._make_parition_subsets(kp)
         return self._compute_best_subset(subsets_of_a, subsets_of_b, kp.W)
@@ -466,9 +497,14 @@ class ZeroOneMeetInTheMiddleOptimised(ZeroOneMeetInTheMiddle):
         return subsets_of_b
 
     def solve(self, kp: KnapsackProblem) -> KnapsackSolution:
-        """Solve 0-1 Knapsack Problem using "meet-in-themiddle" algorithm,
+        """Solve kp (problems.KnapsackProblem) using "meet-in-themiddle" algorithm,
         using optimisation steps therein described.
-        See https://en.wikipedia.org/wiki/Knapsack_problem#Meet-in-the-middle"""
+
+        Return maximum value and list indicating the items in the optimal knapsack
+        (0: item is not in the solution; 1: item is in the solution).
+
+        See https://en.wikipedia.org/wiki/Knapsack_problem#Meet-in-the-middle.
+        """
 
         subsets_of_a, subsets_of_b = self._make_parition_subsets(kp)
         subsets_of_b = self._optimise_subsets_of_b(subsets_of_b)
