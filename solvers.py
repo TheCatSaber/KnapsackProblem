@@ -47,23 +47,32 @@ class KnapsackSolver(ABC):
     # Things used by multiple sub-algorithms.
     @classmethod
     def check_strictly_positive(cls, w: list[int], W: int, error_name: str) -> None:
-        """Checks that all weights in w and W are strcitly positive (>0).
-        Raises ValueError if not."""
+        """Checks that all weights in w (list[int]) and
+        that W itself (int) are strcitly positive (>0).
+        If so, return None, otherwise raise ValueError.
+        """
         if any(i <= 0 for i in w):
             raise ValueError(f"{error_name} requires all weights to be greater than 0.")
         if W <= 0:
             raise ValueError(f"{error_name} requires max weights to be greater than 0.")
+        return None
 
     @classmethod
     def make_subsets(
         cls, kp: KnapsackProblem, start: int = 0, end: int = -1
     ) -> Generator[tuple[str, list[int], int, int], None, None]:
-        """Make subsets of kp, or subsets of parition of kp.
+        """Make subsets of kp (problems.KnapsackProblem), or subsets of parition of kp.
 
-        start (int): index of kp.w/kp.v to start at (default 0)
-        end (int): index of kp.w/kp.v to end at +1
-        (so range(start, end) would enumerate indexes of kp.w/kp.v to use), -1 => kp.n (default -1)
-        index_offset
+        Each subset is a tuple with a string (the binary representation of the subset),
+        a list of integers (the indexes of the items in the subset), the value of the subset,
+        and the weight of the subset.
+
+        The subsets are returned within a generator object.
+
+        Optional arguments:
+        start (int): index of kp.w/kp.v to start at (default 0).
+        end (int): index of kp.w/kp.v to end at +1: -1 means end at the last item (default -1).
+        start and end are such that range(start, end) would list the indexes in the subset.
         """
         if end == -1:
             end = kp.n
@@ -82,6 +91,10 @@ class KnapsackSolver(ABC):
 
     @classmethod
     def binary_to_solution(cls, binary: str) -> list[int]:
+        """Convert a string version of a binary to a list of ints version.
+        
+        Binary (str): string of "0"s and "1"s.
+        """
         if not all(char in "01" for char in binary):
             raise ValueError(
                 "binary must be string of only 0 or qs in binary_to_solution"
@@ -110,8 +123,22 @@ class BaseZeroOneDynamicProgramming(KnapsackSolver):
     def _recursive_index_dp(
         cls, i: int, j: int, m: list[list[int]], kp: KnapsackProblem
     ) -> list[int]:
-        """Recursively get solution:
-        if an item is introduced and value changes, that item is in the solution."""
+        """Recursively get solution: if an item is introduced
+        and the value stored in m changes, that item is in the solution.
+
+        Should be interally called from other methods using i = kp.n, and j = kp.W.
+
+        Return solution list of 1 if item is in the solution, 0 otherwise.
+
+        Arguments
+        i (int): first index in m (number of items to use in partial solution).
+        j (int): second index in m (maxmimum weight of partial solution).
+        m (list[list[int]]): 2D list of ints, representating the maximum value
+        obtainable with a partial solution using i items and a maximum weight of j
+        (only cells with i == 0 or j == 0 may be not set with a value of -1,
+        as these must be 0).
+        kp (problems.KnapsackProblem): the Knapsack Problem that is being solved.
+        """
 
         # Make solution set of 0s
         solution = [0 for _ in range(kp.n)]
@@ -120,13 +147,13 @@ class BaseZeroOneDynamicProgramming(KnapsackSolver):
             return solution
 
         # Check for value being -1 (since certain algs set values to be -1 as default)
-        # If the array value is on the edge of the array (i == 0 or j <= 0),
+        # If the array value is on the edge of the array (i == 0 or j == 0),
         # it should be 0, so set it to this.
         # Otherwise raise ValueError, as unsure what it should be.
         # i == 0 technically redudant, but kept for consistency
-        if m[i][j] == -1 and (i == 0 or j <= 0):
+        if m[i][j] == -1 and (i == 0 or j == 0):
             m[i][j] = 0
-        if m[i - 1][j] == -1 and (i - 1 == 0 or j <= 0):
+        if m[i - 1][j] == -1 and (i - 1 == 0 or j == 0):
             m[i - 1][j] = 0
         if m[i][j] == -1 or m[i - 1][j] == -1:
             raise ValueError(
@@ -150,13 +177,19 @@ class BaseZeroOneDynamicProgramming(KnapsackSolver):
     def get_dp_solution_indexes(
         cls, kp: KnapsackProblem, m: list[list[int]]
     ) -> list[int]:
-        """Get indexes of items that are in the solution.
+        """Get binary list showing which items are in the solution,
+        using the BaseZeroOneDynamicProgramming._recursive_index_dp
+        method (middle-manager between solve methods and this method).
 
-        kp - KnapsackProblem.
+        Return what is returned by this method (i.e. a list of ints: 1 if item
+        is in the solution, 0 otherwise).
 
-        m - 2D array of values (not nesc. all filled in),
-        as explained by docstrings of ZeroOneDynamicProgrammingSolver
-        and ZeroOneDynamicProgrammingSolverSlow."""
+        kp (problems.KnapsackProblem): the Knapsack Problem that is being solved.
+        m (list[int[int]]): 2D list of ints, representating the maximum value
+        obtainable with a partial solution using i items and a maximum weight of j
+        (only cells with i == 0 or j == 0 may be not set with a value of -1,
+        as these must be 0).
+        """
 
         return cls._recursive_index_dp(kp.n, kp.W, m, kp)
 
@@ -174,6 +207,15 @@ class ZeroOneDynamicProgrammingFast(BaseZeroOneDynamicProgramming):
     def _recursive(
         self, i: int, j: int, m: list[list[int]], kp: KnapsackProblem
     ) -> int:
+        """Recursively generate solution to kp (problems.KnapsackProblem),
+        returning maximum value (int) that can be achieved using i (int) items and a maximum
+        weight of j (int).
+         
+        Should be interally called from other methods using i = kp.n, and j = kp.W.
+
+        m (list[list[int]]): 2D list of ints, representating the maximum value
+        obtainable with a partial solution using i items and a maximum weight of j.
+        """
         if i == 0 or j <= 0:
             m[i][j] = 0
             return 0
@@ -319,7 +361,12 @@ class ZeroOneRecursive(KnapsackSolver):
         return "0-1 Recursive"
 
     def _recursive(self, i: int, j: int, kp: KnapsackProblem) -> int:
-        """i: number of items to use, j: maximum weight."""
+        """Recursively generate solution to kp (problems.KnapsackProblem),
+        returning maximum value (int) that can be achieved using i (int) items and a maximum
+        weight of j (int).
+
+        Should be interally called from other methods using i = kp.n, and j = kp.W.
+        """
         if i == 0:
             return 0
 
@@ -332,7 +379,19 @@ class ZeroOneRecursive(KnapsackSolver):
             )
 
     def _indexes_recursive(self, i: int, j: int, kp: KnapsackProblem) -> list[int]:
+        """Recursively get whether get index is in the solution or not.
 
+        If an item is introduced and the value returned by ZeroOneRecursive._recursive changes,
+        then that item is in the solution.
+
+        Return solution list of 1 if item is in the solution, 0 otherwise.
+
+        Should be interally called from other methods using i = kp.n, and j = kp.W.
+
+        i (int): number of items in the partial solution.
+        j (int): maximum weight of the partial solution.
+        kp (problems.KnapsackProblem): the Knapsack Problem that is being solved.
+        """
         solution = [0 for _ in range(kp.n)]
 
         if i == 0:
@@ -366,7 +425,15 @@ class ZeroOneRecursiveLRUCache(ZeroOneRecursive):
 
     @lru_cache  # type: ignore
     def _recursive(self, i: int, j: int, kp: KnapsackProblem) -> int:
-        """i: number of items to use, j: maximum weight."""
+        """Recursively generate solution to kp (problems.KnapsackProblem),
+        returning maximum value (int) that can be achieved using i (int) items and a maximum
+        weight of j (int).
+
+        Exactly the same internals as ZerOneRecursive._recursive, except decoratored
+        with functools.lru_cache
+
+        Should be interally called from other methods using i = kp.n, and j = kp.W.
+        """
         if i == 0:
             return 0
 
@@ -380,6 +447,22 @@ class ZeroOneRecursiveLRUCache(ZeroOneRecursive):
 
     @lru_cache  # type: ignore
     def _indexes_recursive(self, i: int, j: int, kp: KnapsackProblem) -> list[int]:
+        """Recursively get whether get index is in the solution or not.
+
+        Exactly the same internals as ZerOneRecursive._recursive, except decoratored
+        with functools.lru_cache
+
+        If an item is introduced and the value returned by ZeroOneRecursive._recursive changes,
+        then that item is in the solution.
+
+        Return solution list of 1 if item is in the solution, 0 otherwise.
+
+        Should be interally called from other methods using i = kp.n, and j = kp.W.
+
+        i (int): number of items in the partial solution.
+        j (int): maximum weight of the partial solution.
+        kp (problems.KnapsackProblem): the Knapsack Problem that is being solved.
+        """
         solution = [0 for _ in range(kp.n)]
 
         if i == 0:
@@ -416,6 +499,13 @@ class ZeroOneMeetInTheMiddle(KnapsackSolver):
     def _make_parition_subsets(
         cls, kp: KnapsackProblem
     ) -> tuple[MITM_subset, MITM_subset]:
+        """Parition kp (problems.KnapackProblem) into two subsets, A and B, and generate all
+        possible subsets of these.
+
+        Return 2 dicts (each dict is a MITM_subset; one for A and B respectively):
+        the keys are the binary representations of these subsets,
+        and the values are a tuple of the value and the weight of the corresponding subset.
+        """
         midpoint = kp.n // 2
         subsets_of_a = {
             binary: (value, weight)
@@ -435,6 +525,19 @@ class ZeroOneMeetInTheMiddle(KnapsackSolver):
         W: int,
         ordered_weights: bool = False,
     ) -> KnapsackSolution:
+        """Find the best subset of the Knapsack Problem.
+
+        Return the maximum value, and the solution in the list of 0s and 1s form.
+        
+        subsets_of_a (MITM_subset): 1st part of tuple produced by
+        ZeroOneMeetInTheMiddle._make_parition_subsets.
+        subsets_of_b (MITM_subset): 2nd part of tuple produced by
+        ZeroOneMeetInTheMiddle._make_parition_subsets.
+        W (int): maximum weight for the Knapsack Problem.
+        ordered_weights: bool: if True, then subsets_of_b has been modified so the weights
+        are ordered from lowest to highest, so the algorithm can skip the rest of the
+        subsets_of_b once W has been exceeded.
+        """
         max_value = 0
         best_binary = ""
 
@@ -476,6 +579,11 @@ class ZeroOneMeetInTheMiddleOptimised(ZeroOneMeetInTheMiddle):
 
     @classmethod
     def _optimise_subsets_of_b(cls, subsets_of_b: MITM_subset) -> MITM_subset:
+        """Optimise subsets_of_b (MITM_subset) by sorting by weight and discarding subsets
+        that weigh more than another subset with a greater or equal value.
+        
+        Return the optimised subsets_of_b dict.
+        """
         # Sort by weight
         subsets_of_b = {
             binary: (value, weight)
@@ -483,7 +591,7 @@ class ZeroOneMeetInTheMiddleOptimised(ZeroOneMeetInTheMiddle):
                 subsets_of_b.items(), key=lambda item: item[1][1]
             )
         }
-        # Discard if this item weighs more than another subset with greater or equal value.
+        # Discard if this item weighs more than another subset with a greater or equal value.
         # (so discarded weighs more and has a lower or equal value)
         new_subsets: MITM_subset = {}
         for binary, (value, weight) in subsets_of_b.items():  # Starts at lowest weight
