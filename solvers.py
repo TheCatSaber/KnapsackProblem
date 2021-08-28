@@ -262,7 +262,7 @@ class ZeroOneDynamicProgrammingFast(BaseZeroOneDynamicProgramming):
             return 0, []
 
         # This algorithm assumes w1, w2, ... wn, W > 0, so test this
-        self.check_strictly_positive(kp.w, kp.W, "ZeroOneDynamicProgrammingSolver")
+        self.check_strictly_positive(kp.w, kp.W, "ZeroOneDynamicProgrammingSolverFast")
 
         # Create array with -1 so self._recursive can know whether a value has been set yet.
         m = [[-1 for _ in range(kp.W + 1)] for _ in range(kp.n + 1)]
@@ -411,6 +411,9 @@ class ZeroOneRecursive(KnapsackSolver):
         (0: item is not in the solution; 1: item is in the solution).
         """
 
+        # This algorithm assumes w1, w2, ... wn, W > 0, so test this
+        self.check_strictly_positive(kp.w, kp.W, "ZeroOneRecursive")
+
         return self._recursive(kp.n, kp.W, kp), self._indexes_recursive(kp.n, kp.W, kp)
 
 
@@ -482,6 +485,9 @@ class ZeroOneRecursiveLRUCache(ZeroOneRecursive):
         Return maximum value and list indicating the items in the optimal knapsack
         (0: item is not in the solution; 1: item is in the solution).
         """
+
+        # This algorithm assumes w1, w2, ... wn, W > 0, so test this
+        self.check_strictly_positive(kp.w, kp.W, "ZeroOneRecursiveLRUCache")
 
         return self._recursive(kp.n, kp.W, kp), self._indexes_recursive(kp.n, kp.W, kp)
 
