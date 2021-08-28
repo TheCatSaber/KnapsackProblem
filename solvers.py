@@ -216,7 +216,7 @@ class ZeroOneDynamicProgrammingFast(BaseZeroOneDynamicProgramming):
         m (list[list[int]]): 2D list of ints, representing the maximum value
         obtainable with a partial solution using i items and a maximum weight of j.
         """
-        if i == 0 or j <= 0:
+        if i == 0 or j == 0:
             m[i][j] = 0
             return 0
         # m[i - 1][j] not calculated, so calculate it
