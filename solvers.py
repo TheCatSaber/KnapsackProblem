@@ -48,7 +48,7 @@ class KnapsackSolver(ABC):
     @classmethod
     def check_strictly_positive(cls, w: list[int], W: int, error_name: str) -> None:
         """Checks that all weights in w (list[int]) and
-        that W itself (int) are strcitly positive (>0).
+        that W itself (int) are strictly positive (>0).
         If so, return None, otherwise raise ValueError.
         """
         if any(i <= 0 for i in w):
@@ -61,7 +61,7 @@ class KnapsackSolver(ABC):
     def make_subsets(
         cls, kp: KnapsackProblem, start: int = 0, end: int = -1
     ) -> Generator[tuple[str, list[int], int, int], None, None]:
-        """Make subsets of kp (problems.KnapsackProblem), or subsets of parition of kp.
+        """Make subsets of kp (problems.KnapsackProblem), or subsets of partition of kp.
 
         Each subset is a tuple with a string (the binary representation of the subset),
         a list of integers (the indexes of the items in the subset), the value of the subset,
@@ -113,7 +113,7 @@ class BaseZeroOneDynamicProgramming(KnapsackSolver):
 
     @abstractmethod
     def solve(self, kp: KnapsackProblem) -> KnapsackSolution:
-        """Abstract method to sovle kp (problems.KnapsackProblem).
+        """Abstract method to solve kp (problems.KnapsackProblem).
 
         Return maximum value and list indicating the items in the optimal knapsack
         (0: item is not in the solution; 1: item is in the solution).
@@ -132,8 +132,8 @@ class BaseZeroOneDynamicProgramming(KnapsackSolver):
 
         Arguments
         i (int): first index in m (number of items to use in partial solution).
-        j (int): second index in m (maxmimum weight of partial solution).
-        m (list[list[int]]): 2D list of ints, representating the maximum value
+        j (int): second index in m (maximum weight of partial solution).
+        m (list[list[int]]): 2D list of ints, representing the maximum value
         obtainable with a partial solution using i items and a maximum weight of j
         (only cells with i == 0 or j == 0 may be not set with a value of -1,
         as these must be 0).
@@ -146,11 +146,11 @@ class BaseZeroOneDynamicProgramming(KnapsackSolver):
         if i == 0:
             return solution
 
-        # Check for value being -1 (since certain algs set values to be -1 as default)
+        # Check for value being -1 (since certain algorithms set values to be -1 as default)
         # If the array value is on the edge of the array (i == 0 or j == 0),
         # it should be 0, so set it to this.
         # Otherwise raise ValueError, as unsure what it should be.
-        # i == 0 technically redudant, but kept for consistency
+        # i == 0 technically redundant, but kept for consistency
         if m[i][j] == -1 and (i == 0 or j == 0):
             m[i][j] = 0
         if m[i - 1][j] == -1 and (i - 1 == 0 or j == 0):
@@ -185,7 +185,7 @@ class BaseZeroOneDynamicProgramming(KnapsackSolver):
         is in the solution, 0 otherwise).
 
         kp (problems.KnapsackProblem): the Knapsack Problem that is being solved.
-        m (list[int[int]]): 2D list of ints, representating the maximum value
+        m (list[int[int]]): 2D list of ints, representing the maximum value
         obtainable with a partial solution using i items and a maximum weight of j
         (only cells with i == 0 or j == 0 may be not set with a value of -1,
         as these must be 0).
@@ -213,7 +213,7 @@ class ZeroOneDynamicProgrammingFast(BaseZeroOneDynamicProgramming):
          
         Should be interally called from other methods using i = kp.n, and j = kp.W.
 
-        m (list[list[int]]): 2D list of ints, representating the maximum value
+        m (list[list[int]]): 2D list of ints, representing the maximum value
         obtainable with a partial solution using i items and a maximum weight of j.
         """
         if i == 0 or j <= 0:
@@ -226,7 +226,7 @@ class ZeroOneDynamicProgrammingFast(BaseZeroOneDynamicProgramming):
         if kp.w[i - 1] > j:
             m[i][j] = m[i - 1][j]
         else:
-            # m[i - 1][j - kp.w[i - 1]] not calculated, so caculate it
+            # m[i - 1][j - kp.w[i - 1]] not calculated, so calculate it
             if m[i - 1][j - kp.w[i - 1]] == -1:
                 m[i - 1][j - kp.w[i - 1]] = self._recursive(
                     i - 1, j - kp.w[i - 1], m, kp
@@ -496,10 +496,10 @@ class ZeroOneMeetInTheMiddle(KnapsackSolver):
         return "0-1 Meet-in-the-middle"
 
     @classmethod
-    def _make_parition_subsets(
+    def _make_partition_subsets(
         cls, kp: KnapsackProblem
     ) -> tuple[MITM_subset, MITM_subset]:
-        """Parition kp (problems.KnapackProblem) into two subsets, A and B, and generate all
+        """Partition kp (problems.KnapsackProblem) into two subsets, A and B, and generate all
         possible subsets of these.
 
         Return 2 dicts (each dict is a MITM_subset; one for A and B respectively):
@@ -530,9 +530,9 @@ class ZeroOneMeetInTheMiddle(KnapsackSolver):
         Return the maximum value, and the solution in the list of 0s and 1s form.
         
         subsets_of_a (MITM_subset): 1st part of tuple produced by
-        ZeroOneMeetInTheMiddle._make_parition_subsets.
+        ZeroOneMeetInTheMiddle._make_partition_subsets.
         subsets_of_b (MITM_subset): 2nd part of tuple produced by
-        ZeroOneMeetInTheMiddle._make_parition_subsets.
+        ZeroOneMeetInTheMiddle._make_partition_subsets.
         W (int): maximum weight for the Knapsack Problem.
         ordered_weights: bool: if True, then subsets_of_b has been modified so the weights
         are ordered from lowest to highest, so the algorithm can skip the rest of the
@@ -563,7 +563,7 @@ class ZeroOneMeetInTheMiddle(KnapsackSolver):
         See https://en.wikipedia.org/wiki/Knapsack_problem#Meet-in-the-middle.
         """
 
-        subsets_of_a, subsets_of_b = self._make_parition_subsets(kp)
+        subsets_of_a, subsets_of_b = self._make_partition_subsets(kp)
         return self._compute_best_subset(subsets_of_a, subsets_of_b, kp.W)
 
 
@@ -614,7 +614,7 @@ class ZeroOneMeetInTheMiddleOptimised(ZeroOneMeetInTheMiddle):
         See https://en.wikipedia.org/wiki/Knapsack_problem#Meet-in-the-middle.
         """
 
-        subsets_of_a, subsets_of_b = self._make_parition_subsets(kp)
+        subsets_of_a, subsets_of_b = self._make_partition_subsets(kp)
         subsets_of_b = self._optimise_subsets_of_b(subsets_of_b)
         return self._compute_best_subset(
             subsets_of_a, subsets_of_b, kp.W, ordered_weights=True
