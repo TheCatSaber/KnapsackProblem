@@ -45,8 +45,8 @@ class KnapsackSolver(ABC):
         """
 
     # Things used by multiple sub-algorithms.
-    @classmethod
-    def check_strictly_positive(cls, w: list[int], W: int, error_name: str) -> None:
+    @staticmethod
+    def check_strictly_positive(w: list[int], W: int, error_name: str) -> None:
         """Checks that all weights in w (list[int]) and
         that W itself (int) are strictly positive (>0).
         If so, return None, otherwise raise ValueError.
@@ -57,9 +57,9 @@ class KnapsackSolver(ABC):
             raise ValueError(f"{error_name} requires max weights to be greater than 0.")
         return None
 
-    @classmethod
+    @staticmethod
     def make_subsets(
-        cls, kp: KnapsackProblem, start: int = 0, end: int = -1
+        kp: KnapsackProblem, start: int = 0, end: int = -1
     ) -> Generator[tuple[str, list[int], int, int], None, None]:
         """Make subsets of kp (problems.KnapsackProblem), or subsets of partition of kp.
 
@@ -89,8 +89,8 @@ class KnapsackSolver(ABC):
             )
             yield binary, subset, subset_value, subset_weight
 
-    @classmethod
-    def binary_to_solution(cls, binary: str) -> list[int]:
+    @staticmethod
+    def binary_to_solution(binary: str) -> list[int]:
         """Convert a string version of a binary to a list of ints version.
         
         Binary (str): string of "0"s and "1"s.
@@ -594,8 +594,8 @@ class ZeroOneMeetInTheMiddleOptimised(ZeroOneMeetInTheMiddle):
         """__str__ magic method"""
         return "0-1 Meet-in-the-middle (optimised)"
 
-    @classmethod
-    def _optimise_subsets_of_b(cls, subsets_of_b: MITM_subset) -> MITM_subset:
+    @staticmethod
+    def _optimise_subsets_of_b(subsets_of_b: MITM_subset) -> MITM_subset:
         """Optimise subsets_of_b (MITM_subset) by sorting by weight and discarding subsets
         that weigh more than another subset with a greater or equal value.
         
