@@ -140,17 +140,19 @@ class BaseZeroOneDynamicProgramming(KnapsackSolver):
         kp (problems.KnapsackProblem): the Knapsack Problem that is being solved.
         """
 
-        # Make solution set of 0s
+        # See https://github.com/thecatsaber/knapsackproblem#Solution_items
+        # for a full explanation.
+        # Make solution set of 0s.
         solution = [0 for _ in range(kp.n)]
-        # Base case
+        # Part 1: Base case.
         if i == 0:
             return solution
 
         # Check for value being -1 (since certain algorithms set values to be -1 as default)
         # If the array value is on the edge of the array (i == 0 or j == 0),
-        # it should be 0, so set it to this.
+        # it should be 0, so set it to this
+        # (Part 1 of https://github.com/thecatsaber/knapsackproblem#Recursive_Explanation).
         # Otherwise raise ValueError, as unsure what it should be.
-        # i == 0 technically redundant, but kept for consistency
         if m[i][j] == -1 and (i == 0 or j == 0):
             m[i][j] = 0
         if m[i - 1][j] == -1 and (i - 1 == 0 or j == 0):
@@ -164,12 +166,12 @@ class BaseZeroOneDynamicProgramming(KnapsackSolver):
                 m[i][j],
                 m[i - 1][j],
             )
-        # If item in solution, call recursively, add item to list and return
+        # Part 2: Item in solution if value changes when item introduced.
         if m[i][j] > m[i - 1][j]:
             solution = cls._recursive_index_dp(i - 1, j - kp.w[i - 1], m, kp)
-            solution[i - 1] = 1  # i - 1 so index of item
+            solution[i - 1] = 1  # i - 1 so index of item.
             return solution
-        # Otherwise item is not in, and remove one item
+        # Part 3: Item not in solution.
         else:
             return cls._recursive_index_dp(i - 1, j, m, kp)
 
@@ -197,7 +199,7 @@ class BaseZeroOneDynamicProgramming(KnapsackSolver):
 class ZeroOneDynamicProgrammingFast(BaseZeroOneDynamicProgramming):
     """Solve 0-1 Knapsack Problem, using Dynamic Programming,
     only calculating values needed (recursively), using second algorithm of
-    https://en.wikipedia.org/wiki/Knapsack_problem#0-1_knapsack_problem
+    https://en.wikipedia.org/wiki/Knapsack_problem#0-1_knapsack_problem.
     """
 
     def __str__(self) -> str:
@@ -216,21 +218,25 @@ class ZeroOneDynamicProgrammingFast(BaseZeroOneDynamicProgramming):
         m (list[list[int]]): 2D list of ints, representing the maximum value
         obtainable with a partial solution using i items and a maximum weight of j.
         """
+        # See https://github.com/thecatsaber/knapsackproblem#Recursive_Explanation
+        # for a full explanation.
+        # Part 1: No items or no weight: no value.
         if i == 0 or j == 0:
             m[i][j] = 0
             return 0
-        # m[i - 1][j] not calculated, so calculate it
+        # If m[i - 1][j] not calculated, calculate it.
         if m[i - 1][j] == -1:
             m[i - 1][j] = self._recursive(i - 1, j, m, kp)
-        # item cannot fit in recursive_name_dp
+        # Part 2: Can item possibly fit in knapsack?
         if kp.w[i - 1] > j:
             m[i][j] = m[i - 1][j]
         else:
-            # m[i - 1][j - kp.w[i - 1]] not calculated, so calculate it
+            # If m[i - 1][j - kp.w[i - 1]] not calculated, calculate it.
             if m[i - 1][j - kp.w[i - 1]] == -1:
                 m[i - 1][j - kp.w[i - 1]] = self._recursive(
                     i - 1, j - kp.w[i - 1], m, kp
                 )
+            # Part 3: Choose highest value of including item and not including item.
             m[i][j] = max(m[i - 1][j], m[i - 1][j - kp.w[i - 1]] + kp.v[i - 1])
         return m[i][j]
 
@@ -239,29 +245,16 @@ class ZeroOneDynamicProgrammingFast(BaseZeroOneDynamicProgramming):
         Recursively calculate values needed in m, starting at m[n][W].
 
         Return maximum value and list indicating the items in the optimal knapsack
-        (0: item is not in the solution; 1: item is in the solution).
+        (0: item is not in the solution; 1: item is in the solution). 
 
-        m = 2D array, with first index (i) indicating how many indexes in kp.w and kp.v to use
-        and the second index (w) indicating the maximum weight for the sub-problem.
-        The value of the array is the maximum value that an be attained with these constraints.
-
-        So the solver wants to calculate m[n][W]
-        m[i][w] can be defined recursively:
-        • m[0][w] = 0
-        • m[i][w] = m[i - 1, w] if w[i-1] > w
-            ->  new item is more than current weight limit, so don't add this item,
-                so value stays the same
-        • m[i][w] = max(m[i-1][w], m[i-1][w-w[i-1]] + v[i-1]) if wi <= w
-            ->  new item is less than current weight limit, so pick greater value of:
-                • Not using new item
-                • Using new item - value of (current weight limit - weight of new item)
-                    + value of new item
+        See https://github.com/thecatsaber/knapsackproblem#Recursive_Explanation
+        for an explanation of the recursion used.
         """
-        # Base case
+        # Base case.
         if kp.n == 0:
             return 0, []
 
-        # This algorithm assumes w1, w2, ... wn, W > 0, so test this
+        # This algorithm assumes w1, w2, ... wn, W > 0, so test this.
         self.check_strictly_positive(kp.w, kp.W, "ZeroOneDynamicProgrammingSolverFast")
 
         # Create array with -1 so self._recursive can know whether a value has been set yet.
@@ -273,7 +266,7 @@ class ZeroOneDynamicProgrammingFast(BaseZeroOneDynamicProgramming):
 class ZeroOneDynamicProgrammingSlow(BaseZeroOneDynamicProgramming):
     """Solve 0-1 Knapsack Problem, using dynamic programming,
     calculating all values needed in array, using first algorithm of
-    https://en.wikipedia.org/wiki/Knapsack_problem#0-1_knapsack_problem
+    https://en.wikipedia.org/wiki/Knapsack_problem#0-1_knapsack_problem.
     """
 
     def __str__(self) -> str:
@@ -287,21 +280,9 @@ class ZeroOneDynamicProgrammingSlow(BaseZeroOneDynamicProgramming):
         Return maximum value and list indicating the items in the optimal knapsack
         (0: item is not in the solution; 1: item is in the solution).
 
-        m = 2D array, with first index (i) indicating how many indexes in kp.w and kp.v to use
-        and the second index (w) indicating the maximum weight for the sub-problem.
-        The value of the array is the maximum value that an be attained with these constraints.
-
-        So the solver wants to calculate m[n][W]
-        m[i][w] can be defined recursively:
-        • m[0][w] = 0
-        • m[i][w] = m[i - 1, w] if w[i-1] > w
-            ->  new item is more than current weight limit, so don't add this item,
-                so value stays the same
-        • m[i][w] = max(m[i-1][w], m[i-1][w-w[i-1]] + v[i-1]) if wi <= w
-            ->  new item is less than current weight limit, so pick greater value of:
-                • Not using new item
-                • Using new item - value of (current weight limit - weight of new item)
-                    + value of new item
+        See https://github.com/thecatsaber/knapsackproblem#Recursive_Explanation
+        for an explanation of how the values are values are set.
+.
         """
         if kp.n == 0:
             return 0, []
@@ -310,14 +291,16 @@ class ZeroOneDynamicProgrammingSlow(BaseZeroOneDynamicProgramming):
         self.check_strictly_positive(kp.w, kp.W, "ZeroOneDynamicProgrammingSolverSlow")
 
         # Creating with 0s so do not have to set top row and left column manually.
+        # This covers Part 1: No items or no weight: no value.
         m = [[0 for _ in range(kp.W + 1)] for _ in range(kp.n + 1)]
 
         for i in range(1, kp.n + 1):
             for j in range(kp.W + 1):
-                # Implement logic as described above
+                # Part 2: Can item possibly fit in knapsack?
                 if kp.w[i - 1] > j:
                     m[i][j] = m[i - 1][j]
                 else:
+                    # Part 3: Choose highest value of including item and not including item.
                     m[i][j] = max(m[i - 1][j], m[i - 1][j - kp.w[i - 1]] + kp.v[i - 1])
 
         return m[kp.n][kp.W], self.get_dp_solution_indexes(kp, m)
@@ -344,7 +327,7 @@ class ZeroOneExhaustive(KnapsackSolver):
 
         max_value: int = 0
         best_binary: str = ""
-        # Generate subsets
+        # Generate subsets.
         for binary, _, value, weight in self.make_subsets(kp):
             if value > max_value and weight <= kp.W:
                 max_value = value
@@ -367,12 +350,17 @@ class ZeroOneRecursive(KnapsackSolver):
 
         Should be interally called from other methods using i = kp.n, and j = kp.W.
         """
-        if i == 0:
+        # See https://github.com/thecatsaber/knapsackproblem#Recursive_Explanation
+        # for a full explanation.
+        # Part 1: No items or no weight: no value.
+        if i == 0 or j == 0:
             return 0
 
+        # Part 2: Can item possibly fit in knapsack?
         if kp.w[i - 1] > j:
             return self._recursive(i - 1, j, kp)
         else:
+            # Part 3: Choose highest value of including item and not including item.
             return max(
                 self._recursive(i - 1, j, kp),
                 self._recursive(i - 1, j - kp.w[i - 1], kp) + kp.v[i - 1],
@@ -392,15 +380,21 @@ class ZeroOneRecursive(KnapsackSolver):
         j (int): maximum weight of the partial solution.
         kp (problems.KnapsackProblem): the Knapsack Problem that is being solved.
         """
+        # See https://github.com/thecatsaber/knapsackproblem#Solution_items
+        # for a full explanation.
+        # Make solution set of 0s.
         solution = [0 for _ in range(kp.n)]
 
+        # Part 1: Base case.
         if i == 0:
             return solution
 
+        # Part 2: Item in solution if value changes when item introduced.
         if self._recursive(i, j, kp) > self._recursive(i - 1, j, kp):
             solution = self._indexes_recursive(i - 1, j - kp.w[i - 1], kp)
             solution[i - 1] = 1
             return solution
+        # Part 3: Item not in solution.
         else:
             return self._indexes_recursive(i - 1, j, kp)
 
@@ -409,9 +403,12 @@ class ZeroOneRecursive(KnapsackSolver):
 
         Return maximum value and list indicating the items in the optimal knapsack
         (0: item is not in the solution; 1: item is in the solution).
+
+        See https://github.com/thecatsaber/knapsackproblem#Recursive_Explanation
+        for an explanation of the recursion used.
         """
 
-        # This algorithm assumes w1, w2, ... wn, W > 0, so test this
+        # This algorithm assumes w1, w2, ... wn, W > 0, so test this.
         self.check_strictly_positive(kp.w, kp.W, "ZeroOneRecursive")
 
         return self._recursive(kp.n, kp.W, kp), self._indexes_recursive(kp.n, kp.W, kp)
@@ -437,12 +434,17 @@ class ZeroOneRecursiveLRUCache(ZeroOneRecursive):
 
         Should be interally called from other methods using i = kp.n, and j = kp.W.
         """
-        if i == 0:
+        # See https://github.com/thecatsaber/knapsackproblem#Recursive_Explanation
+        # for a full explanation.
+        # Part 1: No items or no weight: no value.
+        if i == 0 or j == 0:
             return 0
 
+        # Part 2: Can item possibly fit in knapsack?
         if kp.w[i - 1] > j:
             return self._recursive(i - 1, j, kp)
         else:
+            # Part 3: Choose highest value of including item and not including item.
             return max(
                 self._recursive(i - 1, j, kp),
                 self._recursive(i - 1, j - kp.w[i - 1], kp) + kp.v[i - 1],
@@ -466,15 +468,21 @@ class ZeroOneRecursiveLRUCache(ZeroOneRecursive):
         j (int): maximum weight of the partial solution.
         kp (problems.KnapsackProblem): the Knapsack Problem that is being solved.
         """
+        # See https://github.com/thecatsaber/knapsackproblem#Solution_items
+        # for a full explanation.
+        # Make solution set of 0s.
         solution = [0 for _ in range(kp.n)]
 
+        # Part 1: Base case.
         if i == 0:
             return solution
 
+        # Part 2: Item in solution if value changes when item introduced.
         if self._recursive(i, j, kp) > self._recursive(i - 1, j, kp):
             solution = self._indexes_recursive(i - 1, j - kp.w[i - 1], kp)
             solution[i - 1] = 1
             return solution
+        # Part 3: Item not in solution.
         else:
             return self._indexes_recursive(i - 1, j, kp)
 
@@ -484,9 +492,12 @@ class ZeroOneRecursiveLRUCache(ZeroOneRecursive):
         
         Return maximum value and list indicating the items in the optimal knapsack
         (0: item is not in the solution; 1: item is in the solution).
+
+        See https://github.com/thecatsaber/knapsackproblem#Recursive_Explanation
+        for an explanation of the recursion used.
         """
 
-        # This algorithm assumes w1, w2, ... wn, W > 0, so test this
+        # This algorithm assumes w1, w2, ... wn, W > 0, so test this.
         self.check_strictly_positive(kp.w, kp.W, "ZeroOneRecursiveLRUCache")
 
         return self._recursive(kp.n, kp.W, kp), self._indexes_recursive(kp.n, kp.W, kp)
@@ -555,7 +566,7 @@ class ZeroOneMeetInTheMiddle(KnapsackSolver):
                         max_value = combined_value
                         best_binary = "".join((binary, binary_b))
                 elif ordered_weights:
-                    # Weights in b gone over what this A subset can handle, so next A subset
+                    # Weights in b gone over what this A subset can handle, so next A subset.
                     break
         
         return max_value, cls.binary_to_solution(best_binary)
@@ -590,22 +601,22 @@ class ZeroOneMeetInTheMiddleOptimised(ZeroOneMeetInTheMiddle):
         
         Return the optimised subsets_of_b dict.
         """
-        # Sort by weight
+        # Sort by weight.
         subsets_of_b = {
             binary: (value, weight)
             for binary, (value, weight) in sorted(
                 subsets_of_b.items(), key=lambda item: item[1][1]
             )
         }
-        # Discard if this item weighs more than another subset with a greater or equal value.
-        # (so discarded weighs more and has a lower or equal value)
+        # Discard if this item weighs more than another subset with a greater or equal value
+        # (so discarded weighs more and has a lower or equal value).
         new_subsets: MITM_subset = {}
-        for binary, (value, weight) in subsets_of_b.items():  # Starts at lowest weight
+        for binary, (value, weight) in subsets_of_b.items():  # Starts at lowest weight.
             for (accepted_value, accepted_weight) in new_subsets.values():
                 if weight > accepted_weight and value <= accepted_value:
                     # Discard
                     break
-            else:  # No break (item not discarded)
+            else:  # No break (item not discarded).
                 new_subsets[binary] = (value, weight)
         subsets_of_b = new_subsets
         return subsets_of_b
