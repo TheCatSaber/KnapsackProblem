@@ -71,7 +71,7 @@ class KnapsackSolver(ABC):
 
         Optional arguments:
         start (int): index of kp.w/kp.v to start at (default 0).
-        end (int): index of kp.w/kp.v to end at +1: -1 means end at the last item (default -1).
+        end (int): index of kp.w/kp.v to end at +1: -1 -> end at the last item (default -1).
         start and end are such that range(start, end) would list the indexes in the subset.
         """
         if end == -1:
@@ -92,7 +92,7 @@ class KnapsackSolver(ABC):
     @staticmethod
     def binary_to_solution(binary: str) -> list[int]:
         """Convert a string version of a binary to a list of ints version.
-        
+
         Binary (str): string of "0"s and "1"s.
         """
         if not all(char in "01" for char in binary):
@@ -210,9 +210,9 @@ class ZeroOneDynamicProgrammingFast(BaseZeroOneDynamicProgramming):
         self, i: int, j: int, m: list[list[int]], kp: KnapsackProblem
     ) -> int:
         """Recursively generate solution to kp (problems.KnapsackProblem),
-        returning maximum value (int) that can be achieved using i (int) items and a maximum
-        weight of j (int).
-         
+        returning maximum value (int) that can be achieved using i (int) items
+        and a maximum weight of j (int).
+
         Should be interally called from other methods using i = kp.n, and j = kp.W.
 
         m (list[list[int]]): 2D list of ints, representing the maximum value
@@ -245,7 +245,7 @@ class ZeroOneDynamicProgrammingFast(BaseZeroOneDynamicProgramming):
         Recursively calculate values needed in m, starting at m[n][W].
 
         Return maximum value and list indicating the items in the optimal knapsack
-        (0: item is not in the solution; 1: item is in the solution). 
+        (0: item is not in the solution; 1: item is in the solution).
 
         See https://github.com/thecatsaber/knapsackproblem#Recursive_Explanation
         for an explanation of the recursion used.
@@ -272,7 +272,7 @@ class ZeroOneDynamicProgrammingSlow(BaseZeroOneDynamicProgramming):
     def __str__(self) -> str:
         """__str__ magic method"""
         return "0-1 Dynamic Programming Slow"
-    
+
     def solve(self, kp: KnapsackProblem) -> KnapsackSolution:
         """Solve kp (problems.KnapsackProblem) by Dynamic Programming.
         Calculate all values in array.
@@ -282,7 +282,6 @@ class ZeroOneDynamicProgrammingSlow(BaseZeroOneDynamicProgramming):
 
         See https://github.com/thecatsaber/knapsackproblem#Recursive_Explanation
         for an explanation of how the values are values are set.
-.
         """
         if kp.n == 0:
             return 0, []
@@ -345,8 +344,8 @@ class ZeroOneRecursive(KnapsackSolver):
 
     def _recursive(self, i: int, j: int, kp: KnapsackProblem) -> int:
         """Recursively generate solution to kp (problems.KnapsackProblem),
-        returning maximum value (int) that can be achieved using i (int) items and a maximum
-        weight of j (int).
+        returning maximum value (int) that can be achieved using i (int) items
+        and a maximum weight of j (int).
 
         Should be interally called from other methods using i = kp.n, and j = kp.W.
         """
@@ -369,8 +368,8 @@ class ZeroOneRecursive(KnapsackSolver):
     def _indexes_recursive(self, i: int, j: int, kp: KnapsackProblem) -> list[int]:
         """Recursively get whether get index is in the solution or not.
 
-        If an item is introduced and the value returned by ZeroOneRecursive._recursive changes,
-        then that item is in the solution.
+        If an item is introduced and the value returned by
+        ZeroOneRecursive._recursive changes, then that item is in the solution.
 
         Return solution list of 1 if item is in the solution, 0 otherwise.
 
@@ -426,11 +425,11 @@ class ZeroOneRecursiveLRUCache(ZeroOneRecursive):
     @lru_cache  # type: ignore
     def _recursive(self, i: int, j: int, kp: KnapsackProblem) -> int:
         """Recursively generate solution to kp (problems.KnapsackProblem),
-        returning maximum value (int) that can be achieved using i (int) items and a maximum
-        weight of j (int).
+        returning maximum value (int) that can be achieved using i (int) items
+        and a maximum weight of j (int).
 
         Exactly the same internals as ZerOneRecursive._recursive, except decoratored
-        with functools.lru_cache
+        with functools.lru_cache.
 
         Should be interally called from other methods using i = kp.n, and j = kp.W.
         """
@@ -455,10 +454,10 @@ class ZeroOneRecursiveLRUCache(ZeroOneRecursive):
         """Recursively get whether get index is in the solution or not.
 
         Exactly the same internals as ZerOneRecursive._recursive, except decoratored
-        with functools.lru_cache
+        with functools.lru_cache.
 
-        If an item is introduced and the value returned by ZeroOneRecursive._recursive changes,
-        then that item is in the solution.
+        If an item is introduced and the value returned
+        by ZeroOneRecursiveLRUCache._recursive changes, then that item is in the solution.
 
         Return solution list of 1 if item is in the solution, 0 otherwise.
 
@@ -489,7 +488,7 @@ class ZeroOneRecursiveLRUCache(ZeroOneRecursive):
     def solve(self, kp: KnapsackProblem) -> KnapsackSolution:
         """Solve kp (problems.KnapsackProblem) by recursion, without using an array,
         but using the @functools.lru_cache decorator.
-        
+
         Return maximum value and list indicating the items in the optimal knapsack
         (0: item is not in the solution; 1: item is in the solution).
 
@@ -516,12 +515,13 @@ class ZeroOneMeetInTheMiddle(KnapsackSolver):
     def _make_partition_subsets(
         cls, kp: KnapsackProblem
     ) -> tuple[MITM_subset, MITM_subset]:
-        """Partition kp (problems.KnapsackProblem) into two subsets, A and B, and generate all
-        possible subsets of these.
+        """Partition kp (problems.KnapsackProblem) into two subsets,
+        A and B, and generate all possible subsets of these.
 
         Return 2 dicts (each dict is a MITM_subset; one for A and B respectively):
         the keys are the binary representations of these subsets,
-        and the values are a tuple of the value and the weight of the corresponding subset.
+        and the values are a tuple of the value and the weight
+        of the corresponding subset.
         """
         midpoint = kp.n // 2
         subsets_of_a = {
@@ -545,7 +545,7 @@ class ZeroOneMeetInTheMiddle(KnapsackSolver):
         """Find the best subset of the Knapsack Problem.
 
         Return the maximum value, and the solution in the list of 0s and 1s form.
-        
+
         subsets_of_a (MITM_subset): 1st part of tuple produced by
         ZeroOneMeetInTheMiddle._make_partition_subsets.
         subsets_of_b (MITM_subset): 2nd part of tuple produced by
@@ -568,7 +568,7 @@ class ZeroOneMeetInTheMiddle(KnapsackSolver):
                 elif ordered_weights:
                     # Weights in b gone over what this A subset can handle, so next A subset.
                     break
-        
+
         return max_value, cls.binary_to_solution(best_binary)
 
     def solve(self, kp: KnapsackProblem) -> KnapsackSolution:
@@ -598,7 +598,7 @@ class ZeroOneMeetInTheMiddleOptimised(ZeroOneMeetInTheMiddle):
     def _optimise_subsets_of_b(subsets_of_b: MITM_subset) -> MITM_subset:
         """Optimise subsets_of_b (MITM_subset) by sorting by weight and discarding subsets
         that weigh more than another subset with a greater or equal value.
-        
+
         Return the optimised subsets_of_b dict.
         """
         # Sort by weight.
