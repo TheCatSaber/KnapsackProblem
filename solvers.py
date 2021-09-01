@@ -140,7 +140,7 @@ class BaseZeroOneDynamicProgramming(KnapsackSolver):
         kp (problems.KnapsackProblem): the Knapsack Problem that is being solved.
         """
 
-        # See https://github.com/thecatsaber/knapsackproblem#Solution_items
+        # See https://github.com/thecatsaber/knapsackproblem#solution-items
         # for a full explanation.
         # Make solution set of 0s.
         solution = [0 for _ in range(kp.n)]
@@ -151,7 +151,7 @@ class BaseZeroOneDynamicProgramming(KnapsackSolver):
         # Check for value being -1 (since certain algorithms set values to be -1 as default)
         # If the array value is on the edge of the array (i == 0 or j == 0),
         # it should be 0, so set it to this
-        # (Part 1 of https://github.com/thecatsaber/knapsackproblem#Recursive_Explanation).
+        # (Part 1 of https://github.com/thecatsaber/knapsackproblem#recursive-explanation).
         # Otherwise raise ValueError, as unsure what it should be.
         if m[i][j] == -1 and (i == 0 or j == 0):
             m[i][j] = 0
@@ -218,7 +218,7 @@ class ZeroOneDynamicProgrammingFast(BaseZeroOneDynamicProgramming):
         m (list[list[int]]): 2D list of ints, representing the maximum value
         obtainable with a partial solution using i items and a maximum weight of j.
         """
-        # See https://github.com/thecatsaber/knapsackproblem#Recursive_Explanation
+        # See https://github.com/thecatsaber/knapsackproblem#recursive-explanation
         # for a full explanation.
         # Part 1: No items or no weight: no value.
         if i == 0 or j == 0:
@@ -247,7 +247,7 @@ class ZeroOneDynamicProgrammingFast(BaseZeroOneDynamicProgramming):
         Return maximum value and list indicating the items in the optimal knapsack
         (0: item is not in the solution; 1: item is in the solution).
 
-        See https://github.com/thecatsaber/knapsackproblem#Recursive_Explanation
+        See https://github.com/thecatsaber/knapsackproblem#recursive-explanation
         for an explanation of the recursion used.
         """
         # Base case.
@@ -280,7 +280,7 @@ class ZeroOneDynamicProgrammingSlow(BaseZeroOneDynamicProgramming):
         Return maximum value and list indicating the items in the optimal knapsack
         (0: item is not in the solution; 1: item is in the solution).
 
-        See https://github.com/thecatsaber/knapsackproblem#Recursive_Explanation
+        See https://github.com/thecatsaber/knapsackproblem#recursive-explanation
         for an explanation of how the values are values are set.
         """
         if kp.n == 0:
@@ -349,7 +349,7 @@ class ZeroOneRecursive(KnapsackSolver):
 
         Should be interally called from other methods using i = kp.n, and j = kp.W.
         """
-        # See https://github.com/thecatsaber/knapsackproblem#Recursive_Explanation
+        # See https://github.com/thecatsaber/knapsackproblem#recursive-explanation
         # for a full explanation.
         # Part 1: No items or no weight: no value.
         if i == 0 or j == 0:
@@ -379,7 +379,7 @@ class ZeroOneRecursive(KnapsackSolver):
         j (int): maximum weight of the partial solution.
         kp (problems.KnapsackProblem): the Knapsack Problem that is being solved.
         """
-        # See https://github.com/thecatsaber/knapsackproblem#Solution_items
+        # See https://github.com/thecatsaber/knapsackproblem#solution-items
         # for a full explanation.
         # Make solution set of 0s.
         solution = [0 for _ in range(kp.n)]
@@ -403,7 +403,7 @@ class ZeroOneRecursive(KnapsackSolver):
         Return maximum value and list indicating the items in the optimal knapsack
         (0: item is not in the solution; 1: item is in the solution).
 
-        See https://github.com/thecatsaber/knapsackproblem#Recursive_Explanation
+        See https://github.com/thecatsaber/knapsackproblem#recursive-explanation
         for an explanation of the recursion used.
         """
 
@@ -433,7 +433,7 @@ class ZeroOneRecursiveLRUCache(ZeroOneRecursive):
 
         Should be interally called from other methods using i = kp.n, and j = kp.W.
         """
-        # See https://github.com/thecatsaber/knapsackproblem#Recursive_Explanation
+        # See https://github.com/thecatsaber/knapsackproblem#recursive-explanation
         # for a full explanation.
         # Part 1: No items or no weight: no value.
         if i == 0 or j == 0:
@@ -467,7 +467,7 @@ class ZeroOneRecursiveLRUCache(ZeroOneRecursive):
         j (int): maximum weight of the partial solution.
         kp (problems.KnapsackProblem): the Knapsack Problem that is being solved.
         """
-        # See https://github.com/thecatsaber/knapsackproblem#Solution_items
+        # See https://github.com/thecatsaber/knapsackproblem#solution-items
         # for a full explanation.
         # Make solution set of 0s.
         solution = [0 for _ in range(kp.n)]
@@ -492,7 +492,7 @@ class ZeroOneRecursiveLRUCache(ZeroOneRecursive):
         Return maximum value and list indicating the items in the optimal knapsack
         (0: item is not in the solution; 1: item is in the solution).
 
-        See https://github.com/thecatsaber/knapsackproblem#Recursive_Explanation
+        See https://github.com/thecatsaber/knapsackproblem#recursive-explanation
         for an explanation of the recursion used.
         """
 
