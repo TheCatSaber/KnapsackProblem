@@ -40,7 +40,7 @@ class KnapsackProblem:
             )
         if W < 0:
             raise ValueError(
-                "The maximum weight (W) must be greater than or eual to 0."
+                "The maximum weight (W) must be greater than or equal to 0."
             )
 
     def __init__(self, n: int, w: list[int], v: list[int], W: int) -> None:
