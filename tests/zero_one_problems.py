@@ -15,14 +15,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import os
-import sys
 from typing import NamedTuple
 
-# Put parent directory on import path, so can import stuff from there
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from problems import KnapsackProblem
-from solvers import KnapsackSolution
+from context import KnapsackProblem, KnapsackSolution
 
 # Create named tuple for problem, answer
 

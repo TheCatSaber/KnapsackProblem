@@ -14,14 +14,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
+import itertools
+import sys
 from abc import ABC, abstractmethod
 from functools import lru_cache
-import itertools
 from typing import Generator
 
-
-from problems import KnapsackProblem
+sys.path.append("..")
+from src.problems import KnapsackProblem
 
 KnapsackSolution = tuple[int, list[int]]
 MITM_subset = dict[str, tuple[int, int]]

@@ -15,18 +15,14 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import os
-import sys
 import unittest
 from typing import Generator
 
 from tester_base_classes import BaseZeroOneTester
 
-# Put parent directory on import path, so can import stuff from there
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from problems import KnapsackProblem
-from solvers import (
+from context import (
     BaseZeroOneDynamicProgramming,
+    KnapsackProblem,
     KnapsackSolver,
     ZeroOneDynamicProgrammingFast,
     ZeroOneDynamicProgrammingSlow,
