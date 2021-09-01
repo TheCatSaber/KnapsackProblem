@@ -406,6 +406,9 @@ class ZeroOneRecursive(KnapsackSolver):
         See https://github.com/thecatsaber/knapsackproblem#recursive-explanation
         for an explanation of the recursion used.
         """
+        # Base case.
+        if kp.n == 0:
+            return 0, []
 
         # This algorithm assumes w1, w2, ... wn, W > 0, so test this.
         self.check_strictly_positive(kp.w, kp.W, "ZeroOneRecursive")
@@ -495,6 +498,9 @@ class ZeroOneRecursiveLRUCache(ZeroOneRecursive):
         See https://github.com/thecatsaber/knapsackproblem#recursive-explanation
         for an explanation of the recursion used.
         """
+        # Base case.
+        if kp.n == 0:
+            return 0, []
 
         # This algorithm assumes w1, w2, ... wn, W > 0, so test this.
         self.check_strictly_positive(kp.w, kp.W, "ZeroOneRecursiveLRUCache")
