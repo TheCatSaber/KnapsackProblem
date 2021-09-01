@@ -15,11 +15,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-# from problems import KnapsackProblem
-# from solvers import ZeroOneDynamicProgrammingSolverSlow, ZeroOneDynamicProgrammingSolver
+# from src import KnapsackProblem, ZeroOneDynamicProgrammingFast
 
 
 def main():
+    # print(ZeroOneDynamicProgrammingFast().solve(KnapsackProblem(3, [4, 2, 3], [5, 4, 8], 7)))
     pass
 
 

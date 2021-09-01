@@ -14,14 +14,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
+import itertools
+import sys
 from abc import ABC, abstractmethod
 from functools import lru_cache
-import itertools
 from typing import Generator
 
-
-from problems import KnapsackProblem
+sys.path.append("..")
+from src.problems import KnapsackProblem
 
 KnapsackSolution = tuple[int, list[int]]
 MITM_subset = dict[str, tuple[int, int]]
@@ -406,6 +406,9 @@ class ZeroOneRecursive(KnapsackSolver):
         See https://github.com/thecatsaber/knapsackproblem#recursive-explanation
         for an explanation of the recursion used.
         """
+        # Base case.
+        if kp.n == 0:
+            return 0, []
 
         # This algorithm assumes w1, w2, ... wn, W > 0, so test this.
         self.check_strictly_positive(kp.w, kp.W, "ZeroOneRecursive")
@@ -495,6 +498,9 @@ class ZeroOneRecursiveLRUCache(ZeroOneRecursive):
         See https://github.com/thecatsaber/knapsackproblem#recursive-explanation
         for an explanation of the recursion used.
         """
+        # Base case.
+        if kp.n == 0:
+            return 0, []
 
         # This algorithm assumes w1, w2, ... wn, W > 0, so test this.
         self.check_strictly_positive(kp.w, kp.W, "ZeroOneRecursiveLRUCache")

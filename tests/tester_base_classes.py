@@ -15,8 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import os
-import sys
 import unittest
 from typing import Optional
 
@@ -35,9 +33,7 @@ from zero_one_problems import (
     ZOpWP,
 )
 
-# Put parent directory on import path, so can import stuff from there
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from solvers import KnapsackSolver
+from context import KnapsackSolver
 
 
 class BaseZeroOneTester(unittest.TestCase):
